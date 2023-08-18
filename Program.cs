@@ -8,6 +8,7 @@
             GameStartScene();
         }
 
+
         static void GameStartScene()
         {
             Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다.");
@@ -47,6 +48,7 @@
                 Console.WriteLine("잘못된 입력입니다. 선택지의 번호를 입력해주세요.");
             }
         }
+
 
         
     }
