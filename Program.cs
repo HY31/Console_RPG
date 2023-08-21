@@ -6,9 +6,9 @@ namespace ConsoleRPG
     {
         private static Player player;
         private static Inventory inventory;
+        private static Item item;
         static void Main(string[] args)
         {
-
             Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다.");
             Console.WriteLine("Enter키를 눌러 게임에 접속할 수 있습니다.");
             Console.ReadLine();
@@ -100,17 +100,42 @@ namespace ConsoleRPG
             Console.WriteLine("장비를 관리할 수 있습니다.");
             Console.WriteLine("");
             inventory.ItemList(); // 아이템 목록 호출
+         
             Console.WriteLine("");
             Console.WriteLine("0. 돌아가기");
             Console.WriteLine("");
             Choices();
             int input = CheckInput(0, 3);
+            
             switch (input)
             {
                 case 0:
                     Console.Clear();
                     DisplayInventory();
                     break;
+                default :
+                    Console.Clear();
+                    item = inventory.GetItem(input - 1);
+                    if (item.IsEquipped == false)
+                    {
+                        item.IsEquipped = true;
+                        player.StatATK += item.UpATK;
+                        player.StatDEF += item.UpDEF;
+                    }
+                    else
+                    {
+                        item.IsEquipped = false;
+                        player.StatATK -= item.UpATK;
+                        player.StatDEF -= item.UpDEF;
+                    }
+                    DisplayEquipScene();
+                    break;
+                //case 2: Item shortSword = new Item("숏소드", "짧은 단검. 조금만 휘둘러도 망가질 것 같다.");  // 상점은 이런 식으로 하면 될 듯??????
+                //    inventory.AddItem(shortSword);
+                //    Console.Clear();
+                //    DisplayInventory();
+                //    break;
+
             }
         }
 
@@ -143,13 +168,6 @@ namespace ConsoleRPG
                     ViliageScene();
                     break;
             }
-        }
-
-        
-
-        static void Equipped() // 장비 장착 관리 - 아직 안씀
-        {
-            
         }
 
         static void PlayerData()
@@ -185,17 +203,21 @@ namespace ConsoleRPG
             public string Name { get; set; }
             public string Description { get; set; }
             public bool IsEquipped { get; set; }
-
-            public Item(string name, string description)
+            public int UpATK { get; set; }
+            public int UpDEF { get; set; }
+            public Item(string name, string description, int upATK, int upDEF)
             {
                 Name = name;
                 Description = description;
+                UpATK = upATK;
+                UpDEF = upDEF;
+                IsEquipped = false;
             }
         }
 
         public class Inventory
         {
-            private Item[] items;
+            private Item[] items;  // 외부에서 맘대로 못건드리게 private으로 해놓음
             
             public Inventory(int size)
             {
@@ -204,8 +226,6 @@ namespace ConsoleRPG
 
             public void AddItem(Item item) // 아이템 추가 기능
             {
-                
-
                 for (int i=0; i<items.Length; i++)
                 {
                     if (items[i] == null)
@@ -231,6 +251,15 @@ namespace ConsoleRPG
                 }
             }
 
+            public Item GetItem(int itemIndex)
+            {
+                if(itemIndex < items.Length)
+                {
+                    return items[itemIndex];
+                }
+                return null;
+            }
+
             public void ItemList()  //아이템 목록 출력 함수
             {
                 Console.WriteLine("[아이템 목록]");
@@ -238,7 +267,13 @@ namespace ConsoleRPG
                 {
                     if (items[i] != null)
                     {
-                        Console.WriteLine($"{i + 1}.{items[i].Name}   |  {items[i].Description}");
+                        string itemText = $"{i + 1}.";
+                        if (items[i].IsEquipped)
+                        {
+                            itemText += "[E] ";
+                        }
+                        itemText += $"{items[i].Name}  |  {items[i].Description}";
+                        Console.WriteLine(itemText);
                     }
                 }
             }
@@ -246,9 +281,9 @@ namespace ConsoleRPG
         }
         static void ItemsInInventory(Inventory inventory)  // 인벤토리에 있는 아이템
         {
-            Item sword = new Item("낡은 단검", "낡아서 이가 나간 단검이다.  |  공격력 + 1");
-            Item bow = new Item("낡은 활", "금방이라도 시위가 끊어질 것 같은 활.  | 공격력 + 1");
-            Item shield = new Item("나무 방패", "나무로 만든 못 미더운 방패.  |  방어력 + 1");
+            Item sword = new Item("낡은 단검", "낡아서 이가 나간 단검이다.  |  공격력 + 3", 3, 0);
+            Item bow = new Item("낡은 활", "금방이라도 시위가 끊어질 것 같은 활.  | 공격력 + 4", 4, 0);
+            Item shield = new Item("나무 방패", "나무로 만든 못 미더운 방패.  |  방어력 + 3", 0, 3);
 
             inventory.AddItem(sword);
             inventory.AddItem(bow);
