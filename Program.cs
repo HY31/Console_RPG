@@ -54,10 +54,11 @@ namespace ConsoleRPG
             Console.WriteLine("1. 상태창 보기");
             Console.WriteLine("2. 인벤토리 보기");
             Console.WriteLine("3. 상점 가기");
+            Console.WriteLine("4. 던전 입장");
             Console.WriteLine("0. 게임 종료");
             Choices();
 
-            int input = CheckInput(0, 3); // 선택지 함수. 선택지마다 쓸 것
+            int input = CheckInput(0, 4); // 선택지 함수. 선택지마다 쓸 것
             switch(input)
             {
                 case 1: Console.Clear(); 
@@ -68,6 +69,28 @@ namespace ConsoleRPG
                     break;
                 case 3: Console.Clear();
                     StoreScene();
+                    break;
+                case 4: Console.Clear();
+                    for(int i = 0; i<2; i++)    //던전 진행 실험 코드.. 만들다 말았다! 이건 메서드로 만들어야 될듯
+                    {
+                        Console.SetCursorPosition(10, 10);
+                        Console.WriteLine("던전 진행 중...");
+                        Thread.Sleep(500);
+                        Console.Clear();
+                        Console.SetCursorPosition(10, 10);
+                        Console.WriteLine("던전 진행 중..");
+                        Thread.Sleep(500);
+                        Console.Clear();
+                        Console.SetCursorPosition(10, 10);
+                        Console.WriteLine("던전 진행 중.");
+                        Thread.Sleep(500);
+                        Console.Clear();
+                        Console.SetCursorPosition(10, 10);
+                        Console.WriteLine("던전 진행 중");
+                        Thread.Sleep(500);
+                        Console.Clear();
+                    }
+                    ViliageScene();
                     break;
                 case 0: Console.WriteLine("게임을 종료합니다.");
                     break;
@@ -178,7 +201,7 @@ namespace ConsoleRPG
 
         static void PlayerData()
         {
-            player = new Player("김전사", "전사", 10, 10, 15, 50000, 1000);
+            player = new Player("김전사", "전사", 10, 10, 15, 1000, 100);
         }
 
         public class Player // 플레이어 상태 틀
@@ -207,17 +230,20 @@ namespace ConsoleRPG
         public class Item
         {
             public string Name { get; }
+            public string StatTxt { get; set; }
             public string Description { get; }
             public bool IsEquipped { get; set; }
             public int UpATK { get; set; }
             public int UpDEF { get; set; }
-            public Item(string name, string description, int upATK, int upDEF)
+            public Item(string name, string statTxt,  string description,  int upATK, int upDEF)
             {
                 Name = name;
+                StatTxt = statTxt;
                 Description = description;
                 UpATK = upATK;
                 UpDEF = upDEF;
                 IsEquipped = false;
+                
             }
         }
 
@@ -278,23 +304,22 @@ namespace ConsoleRPG
                 {
                     if (items[i] != null)
                     {
-                        string itemText = $"{i + 1}.";
+                        string itemText = $"{i + 1}. ";
                         if (items[i].IsEquipped)
                         {
                             itemText += "[E] ";
                         }
-                        itemText += $"{items[i].Name}  |  {items[i].Description}";
+                        itemText += $"{items[i].Name,-7} | {items[i].StatTxt,-7} | {items[i].Description,-20}";
                         Console.WriteLine(itemText);
                     }
                 }
             }
-
         }
         static void ItemsInInventory(Inventory inventory)  // 인벤토리에 있는 아이템
         {
-            Item sword = new Item("낡은 단검", "낡아서 이가 나간 단검이다.  |  공격력 + 3", 3, 0);
-            Item bow = new Item("낡은 활", "금방이라도 시위가 끊어질 것 같은 활.  | 공격력 + 4", 4, 0);
-            Item shield = new Item("나무 방패", "나무로 만든 못 미더운 방패.  |  방어력 + 3", 0, 3);
+            Item sword = new Item("낡은 단검", "공격력 + 3", "낡아서 이가 나간 단검이다.", 3, 0);
+            Item bow = new Item("낡은 활", "공격력 + 4", "금방이라도 시위가 끊어질 것 같은 활.",  4, 0);
+            Item shield = new Item("나무 방패", "방어력 + 3", "나무로 만든 못 미더운 방패.",   0, 3);
 
             inventory.AddItem(sword);
             inventory.AddItem(bow);
@@ -306,7 +331,9 @@ namespace ConsoleRPG
         {
             Title();
             ItemInStore(store);
-            Console.WriteLine("[상점]");
+            Console.WriteLine("[드워프의 상점]");
+            Console.WriteLine("");
+            Console.WriteLine($"현재 보유 골드 : {player.Gold} G");
             Console.WriteLine("");
             Console.WriteLine("어서 오시게! 쓸만한 물건이 많으니 천천히 둘러보게나!");
             Console.WriteLine("판매중인 아이템들의 번호를 눌러 구매할 수 있다네!");
@@ -333,10 +360,10 @@ namespace ConsoleRPG
         public class StoreItem : Item  // 판매하려면 Item에 들어가야되므로 상속
         {
             public bool IsSoldOut { get; set; }
-            public string PriceTxt { get; set; }
             public int Price { get; set; }
-            public StoreItem(string name, string description, int upATK, int upDEF, int price, string priceTxt)
-                : base(name, description, upATK, upDEF)
+            public string PriceTxt { get; set; }
+            public StoreItem(string name,string statTxt, string description, int upATK, int upDEF, int price, string priceTxt)
+                : base(name, statTxt, description, upATK, upDEF)
             {
                 IsSoldOut = false;
                 Price = price;
@@ -345,12 +372,16 @@ namespace ConsoleRPG
         }
         static void ItemInStore(Store store)
         {
-            StoreItem spear = new StoreItem("튼튼한 창", "좋은 목재와 쇠로 만든 창. 튼튼하다!  |  공격력 + 10", 10, 0, 1500, "  |  가격 : 1500 G");
-            StoreItem ironShield = new StoreItem("강철 방패", "강철로 이루어진 믿음직한 방패.  |  방어력 + 12", 0, 12, 1700, "  |  가격 : 1700 G");
-            StoreItem leatherBoots = new StoreItem("가죽 장화", "가죽으로 만들어진 장화.  |  방어력 + 7  |  가격 : 1000 G", 0, 7, 1000, "  |  가격 : 1000 G");
-            StoreItem clothgloves = new StoreItem("천 장갑", "부드럽지만 얇은 천 장갑.  |  방어력 + 4  |  가격 : 500 G", 0, 4, 500, "  |  가격 : 500G");
+            StoreItem spear = new StoreItem("튼튼한 창", "공격력 + 10", "좋은 목재와 쇠로 만든 창. 튼튼하다!", 10, 0, 1500, "가격 : 1500 G");
+            StoreItem mace = new StoreItem("청동 메이스", "공격력 15", "청동으로 만든 철퇴.", 14, 0, 2000, "가격 : 2000 G");
+            StoreItem claymore = new StoreItem("클레이모어", "공격력 + 20", "양날의 대검. 상당히 무겁다.", 20, 0, 2500, "가격 : 2500 G");
+            StoreItem ironShield = new StoreItem("강철 방패", "방어력 + 12", "강철로 이루어진 믿음직한 방패.",   0, 12, 1700, "가격 : 1700 G");
+            StoreItem leatherBoots = new StoreItem("가죽 장화", "방어력 + 7", "가죽으로 만들어진 장화.", 0, 7, 1000,"가격 : 1000 G");
+            StoreItem clothgloves = new StoreItem("천 장갑", "방어력 + 4", "부드럽지만 얇은 천 장갑.", 0, 4, 500, "가격 : 500G");
 
             store.AddStoreItem(spear);
+            store.AddStoreItem(mace);
+            store.AddStoreItem(claymore);
             store.AddStoreItem(ironShield);
             store.AddStoreItem(leatherBoots);
             store.AddStoreItem(clothgloves);
@@ -413,7 +444,7 @@ namespace ConsoleRPG
                         {
                             storeItemText += "[품절!] ";
                         }
-                        storeItemText += $"{storeItems[i].Name}  |  {storeItems[i].Description}";
+                        storeItemText += $"{storeItems[i].Name,-7}  |  {storeItems[i].StatTxt,-7}  |  {storeItems[i].Description,-20}  |  {storeItems[i].PriceTxt,-7}";
                         Console.WriteLine(storeItemText);
                     }
                 }
@@ -444,16 +475,16 @@ namespace ConsoleRPG
                         storeItem.IsSoldOut = true;
                         player.Gold -= storeItem.Price;
 
-                        Console.SetCursorPosition(0,6);
+                        Console.SetCursorPosition(0 , 12);
                         Console.ForegroundColor = ConsoleColor.Green;   //  대사 색깔 변경
                         string sellDialogue = NpcDialogues(sellDialogues);   // 랜덤 대사
                         Console.WriteLine(sellDialogue);  
                         Console.ResetColor();  // 대사 색깔 리셋
                         Console.SetCursorPosition(0, 0);
                     }
-                    else if(player.Gold < storeItem.Price)  // 구매 불가
+                    else if(player.Gold < storeItem.Price && storeItem.IsSoldOut == false)  // 구매 불가
                     {
-                        Console.SetCursorPosition(0, 6);
+                        Console.SetCursorPosition(0, 12);
                         Console.ForegroundColor = ConsoleColor.Red;
                         string cantSellDialogue = NpcDialogues(cantSell);
                         Console.WriteLine(cantSellDialogue);
@@ -462,7 +493,7 @@ namespace ConsoleRPG
                     }
                     else if(storeItem.IsSoldOut == true) // 품절일 때
                     {
-                        Console.SetCursorPosition(0, 6);
+                        Console.SetCursorPosition(0, 12);
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         string soldOutDialogue = NpcDialogues(soldOutDialogues);
                         Console.WriteLine(soldOutDialogue);
@@ -495,8 +526,10 @@ namespace ConsoleRPG
         static void Title()
         {
             string text = "☜§    Console RPG    §☞";
-            Console.SetCursorPosition((Console.WindowWidth - text.Length) / 2, Console.CursorTop);
+            Console.SetCursorPosition((Console.WindowWidth - text.Length) / 2, Console.CursorTop+2);  // 가운데 정렬하는 방법
             Console.WriteLine(text);
+            Console.WriteLine("");
+            Console.WriteLine("");
         }
 
         
