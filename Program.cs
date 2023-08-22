@@ -331,7 +331,7 @@ namespace ConsoleRPG
         {
             Title();
             ItemInStore(store);
-            Console.WriteLine("[드워프의 상점]");
+            Console.WriteLine("[브룬의 상점]");
             Console.WriteLine("");
             Console.WriteLine($"현재 보유 골드 : {player.Gold} G");
             Console.WriteLine("");
@@ -524,14 +524,12 @@ namespace ConsoleRPG
         }
 
         static void Title()
-        {
+        {   
             string text = "☜§    Console RPG    §☞";
             Console.SetCursorPosition((Console.WindowWidth - text.Length) / 2, Console.CursorTop+2);  // 가운데 정렬하는 방법
             Console.WriteLine(text);
             Console.WriteLine("");
             Console.WriteLine("");
-        }
-
-        
+        } 
     }
 }
