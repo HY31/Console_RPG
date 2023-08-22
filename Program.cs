@@ -1,4 +1,5 @@
 ﻿using static ConsoleRPG.Program;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ConsoleRPG
 {
@@ -7,6 +8,7 @@ namespace ConsoleRPG
         private static Player player;
         private static Inventory inventory;
         private static Item item;
+        private static Store store;
         static void Main(string[] args)
         {
             Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다.");
@@ -14,6 +16,7 @@ namespace ConsoleRPG
             Console.ReadLine();
 
             inventory = new Inventory(10); //최대 아이템 10개
+            store = new Store(10); // 최대 상점 아이템 개수
 
             //메서드만 갖다 놓기
             PlayerData();
@@ -42,9 +45,9 @@ namespace ConsoleRPG
             Console.WriteLine("");
             Console.WriteLine("마을에선 던전으로 들어가기 전에 장비를 확인할 수 있습니다.");
             Console.WriteLine("");
-            Console.WriteLine("1. 상태창");
-            Console.WriteLine("2. 인벤토리");
-            Console.WriteLine("3. 상점");
+            Console.WriteLine("1. 상태창 보기");
+            Console.WriteLine("2. 인벤토리 보기");
+            Console.WriteLine("3. 상점 가기");
             Console.WriteLine("0. 게임 종료");
             Choices();
 
@@ -58,7 +61,7 @@ namespace ConsoleRPG
                     DisplayInventory();
                     break;
                 case 3: Console.Clear();
-                    Console.WriteLine("상점으로 이동합니다.");
+                    StoreScene();
                     break;
                 case 0: Console.WriteLine("게임을 종료합니다.");
                     break;
@@ -105,7 +108,7 @@ namespace ConsoleRPG
             Console.WriteLine("0. 돌아가기");
             Console.WriteLine("");
             Choices();
-            int input = CheckInput(0, 3);
+            int input = CheckInput(0, inventory.GetItemsLength());
             
             switch (input)
             {
@@ -200,8 +203,8 @@ namespace ConsoleRPG
         //인벤토리 관련 모든 것
         public class Item
         {
-            public string Name { get; set; }
-            public string Description { get; set; }
+            public string Name { get; }
+            public string Description { get; }
             public bool IsEquipped { get; set; }
             public int UpATK { get; set; }
             public int UpDEF { get; set; }
@@ -251,13 +254,18 @@ namespace ConsoleRPG
                 }
             }
 
-            public Item GetItem(int itemIndex)
+            public Item GetItem(int itemIndex) //외부에서 접근할 수 있게 만들었다. 
             {
                 if(itemIndex < items.Length)
                 {
                     return items[itemIndex];
                 }
                 return null;
+            }
+
+            public int GetItemsLength()
+            {
+                return items.Length;
             }
 
             public void ItemList()  //아이템 목록 출력 함수
@@ -290,6 +298,130 @@ namespace ConsoleRPG
             inventory.AddItem(shield);
         }
 
+        // 상점 관련
+        static void StoreScene()
+        {
+            ItemInStore(store);
+            Console.WriteLine("[상점]");
+            Console.WriteLine("");
+            Console.WriteLine("어서 오시게! 쓸만한 물건이 많으니 천천히 둘러보게나!");
+            Console.WriteLine("판매중인 아이템들의 번호를 눌러 구매할 수 있다네!");
+            Console.WriteLine("");
+            store.StoreItemList();
+            Console.WriteLine("");
+            Console.WriteLine("0. 뒤로가기");
+            Console.WriteLine("");
+            Console.WriteLine("무엇을 할텐가?");
+            Console.Write(">>");
+            int input = CheckInput(0, store.GetStoreItemsLength());
+            switch(input)
+            {
+                case 0: Console.Clear();
+                    ViliageScene();
+                    break;
+                default: Console.Clear();
+                    StoreScene();
+                    break;
+            }
+        }
+
+        public class StoreItem
+        {
+            public string Name { get; }
+            public string Description { get; }
+            public bool IsSoldOut { get; set; }
+            public int UpATK { get; set; }
+            public int UpDEF { get; set; }
+
+            public int Price { get; set; }
+            public StoreItem(string name, string description, int upATK, int upDEF, int price)
+            {
+                Name = name;
+                Description = description;
+                UpATK = upATK;
+                UpDEF = upDEF;
+                IsSoldOut = false;
+                Price = price;
+            }
+        }
+        static void ItemInStore(Store store)
+        {
+            StoreItem spear = new StoreItem("튼튼한 창", "좋은 목재와 쇠로 만든 창. 튼튼하다!  |  공격력 + 10  |  판매 가격 : 1500 G", 10, 0, 1500);
+            StoreItem ironShield = new StoreItem("강철 방패", "강철로 이루어진 믿음직한 방패.  |  방어력 + 12  |  판매 가격 : 1700 G", 0, 12, 1700);
+            StoreItem leatherBoots = new StoreItem("가죽 장화", "가죽으로 만들어진 장화.  |  방어력 + 7  |  판매 가격 : 1000 G", 0, 7, 1000);
+
+            store.AddStoreItem(spear);
+            store.AddStoreItem(ironShield);
+            store.AddStoreItem(leatherBoots);
+        }
+
+        public class Store
+        {
+            private StoreItem[] storeItems;
+
+            public Store(int storeSize)
+            {
+                storeItems = new StoreItem[storeSize];
+            }
+            public void AddStoreItem(StoreItem storeItem) // 아이템 추가 기능
+            {
+                for (int i = 0; i < storeItems.Length; i++)
+                {
+                    if (storeItems[i] == null)
+                    {
+                        bool isDuplicate = false;
+
+                        foreach (StoreItem existingItem in storeItems)
+                        {
+                            if (existingItem != null && existingItem.Name == storeItem.Name)
+                            {
+                                isDuplicate = true;
+                                break;
+                            }
+                        }
+
+                        if (!isDuplicate)
+                        {
+                            storeItems[i] = storeItem;
+                            break;
+                        }
+
+                    }
+                }
+            }
+            public StoreItem GetStoreItem(int Index) //외부에서 접근할 수 있게 만들었다. 
+            {
+                if (Index < storeItems.Length)
+                {
+                    return storeItems[Index];
+                }
+                return null;
+            }
+            public void StoreItemList()  // 상점 아이템 목록 출력 함수
+            {
+                Console.WriteLine("[판매중인 아이템 목록]");
+                for (int i = 0; i < storeItems.Length; i++)
+                {
+                    if (storeItems[i] != null)
+                    {
+                        string storeItemText = $"{i + 1}.";
+                        if (storeItems[i].IsSoldOut)
+                        {
+                            storeItemText += "[품절!] ";
+                        }
+                        storeItemText += $"{storeItems[i].Name}  |  {storeItems[i].Description}";
+                        Console.WriteLine(storeItemText);
+                    }
+                }
+            }
+
+            public int GetStoreItemsLength()
+            {
+                return storeItems.Length;
+            }
+        }
+
+        
 
         static void Choices()
         {
@@ -297,6 +429,7 @@ namespace ConsoleRPG
             Console.WriteLine("원하시는 행동의 번호를 입력해주세요.");
             Console.Write(">> ");
         }
+
 
         
     }
