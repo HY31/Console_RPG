@@ -71,7 +71,7 @@ namespace ConsoleRPG
                     StoreScene();
                     break;
                 case 4: Console.Clear();
-                    for(int i = 0; i<2; i++)    //던전 진행 실험 코드.. 만들다 말았다! 이건 메서드로 만들어야 될듯
+                    for(int i = 0; i<2; i++)    //던전 진행 애니메이션 실험했던 코드. 던전 자체는 메서드로 만들어야 될듯
                     {
                         Console.SetCursorPosition(10, 10);
                         Console.WriteLine("던전 진행 중...");
