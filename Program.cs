@@ -1,4 +1,5 @@
-﻿using static ConsoleRPG.Program;
+﻿using System;
+using static ConsoleRPG.Program;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ConsoleRPG
@@ -9,11 +10,15 @@ namespace ConsoleRPG
         private static Inventory inventory;
         private static Item item;
         private static Store store;
+        private static StoreItem storeItem;
         static void Main(string[] args)
         {
+            Title();
+            
             Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다.");
             Console.WriteLine("Enter키를 눌러 게임에 접속할 수 있습니다.");
             Console.ReadLine();
+            Console.Clear();
 
             inventory = new Inventory(10); //최대 아이템 10개
             store = new Store(10); // 최대 상점 아이템 개수
@@ -40,6 +45,7 @@ namespace ConsoleRPG
 
         static void ViliageScene()  // 마을 씬
         {
+            Title();
             Console.WriteLine($"어서 오십시오! {player.Name}!");
             Console.WriteLine("현재 위치 : 마을");
             Console.WriteLine("");
@@ -70,6 +76,7 @@ namespace ConsoleRPG
 
         static void DisplayInventory()  // 인벤토리 창
         {
+            Title();
             ItemsInInventory(inventory); // 아이템 목록 값 할당
 
             Console.WriteLine($"[{player.Name}의 인벤토리]");
@@ -97,6 +104,7 @@ namespace ConsoleRPG
         }
         static void DisplayEquipScene() // 장비 관리창
         {
+            Title();
             ItemsInInventory(inventory); // 아이템 목록 값 할당
 
             Console.WriteLine("[장비 관리창]");
@@ -133,17 +141,12 @@ namespace ConsoleRPG
                     }
                     DisplayEquipScene();
                     break;
-                //case 2: Item shortSword = new Item("숏소드", "짧은 단검. 조금만 휘둘러도 망가질 것 같다.");  // 상점은 이런 식으로 하면 될 듯??????
-                //    inventory.AddItem(shortSword);
-                //    Console.Clear();
-                //    DisplayInventory();
-                //    break;
-
             }
         }
 
         static void DisplayPlayerInfo()  // 플레이어 상태창
         {
+            Title();
             Console.WriteLine("[상태창]");
             Console.WriteLine("플레이어의 정보를 확인합니다.");
             Console.WriteLine("");
@@ -175,7 +178,7 @@ namespace ConsoleRPG
 
         static void PlayerData()
         {
-            player = new Player("김전사", "전사", 10, 10, 15, 500, 1000);
+            player = new Player("김전사", "전사", 10, 10, 15, 50000, 1000);
         }
 
         public class Player // 플레이어 상태 틀
@@ -301,6 +304,7 @@ namespace ConsoleRPG
         // 상점 관련
         static void StoreScene()
         {
+            Title();
             ItemInStore(store);
             Console.WriteLine("[상점]");
             Console.WriteLine("");
@@ -320,39 +324,36 @@ namespace ConsoleRPG
                     ViliageScene();
                     break;
                 default: Console.Clear();
+                    store.SellItem(input - 1, inventory);
                     StoreScene();
                     break;
             }
         }
 
-        public class StoreItem
+        public class StoreItem : Item  // 판매하려면 Item에 들어가야되므로 상속
         {
-            public string Name { get; }
-            public string Description { get; }
             public bool IsSoldOut { get; set; }
-            public int UpATK { get; set; }
-            public int UpDEF { get; set; }
-
+            public string PriceTxt { get; set; }
             public int Price { get; set; }
-            public StoreItem(string name, string description, int upATK, int upDEF, int price)
+            public StoreItem(string name, string description, int upATK, int upDEF, int price, string priceTxt)
+                : base(name, description, upATK, upDEF)
             {
-                Name = name;
-                Description = description;
-                UpATK = upATK;
-                UpDEF = upDEF;
                 IsSoldOut = false;
                 Price = price;
+                PriceTxt = priceTxt;
             }
         }
         static void ItemInStore(Store store)
         {
-            StoreItem spear = new StoreItem("튼튼한 창", "좋은 목재와 쇠로 만든 창. 튼튼하다!  |  공격력 + 10  |  판매 가격 : 1500 G", 10, 0, 1500);
-            StoreItem ironShield = new StoreItem("강철 방패", "강철로 이루어진 믿음직한 방패.  |  방어력 + 12  |  판매 가격 : 1700 G", 0, 12, 1700);
-            StoreItem leatherBoots = new StoreItem("가죽 장화", "가죽으로 만들어진 장화.  |  방어력 + 7  |  판매 가격 : 1000 G", 0, 7, 1000);
+            StoreItem spear = new StoreItem("튼튼한 창", "좋은 목재와 쇠로 만든 창. 튼튼하다!  |  공격력 + 10", 10, 0, 1500, "  |  가격 : 1500 G");
+            StoreItem ironShield = new StoreItem("강철 방패", "강철로 이루어진 믿음직한 방패.  |  방어력 + 12", 0, 12, 1700, "  |  가격 : 1700 G");
+            StoreItem leatherBoots = new StoreItem("가죽 장화", "가죽으로 만들어진 장화.  |  방어력 + 7  |  가격 : 1000 G", 0, 7, 1000, "  |  가격 : 1000 G");
+            StoreItem clothgloves = new StoreItem("천 장갑", "부드럽지만 얇은 천 장갑.  |  방어력 + 4  |  가격 : 500 G", 0, 4, 500, "  |  가격 : 500G");
 
             store.AddStoreItem(spear);
             store.AddStoreItem(ironShield);
             store.AddStoreItem(leatherBoots);
+            store.AddStoreItem(clothgloves);
         }
 
         public class Store
@@ -399,7 +400,10 @@ namespace ConsoleRPG
             }
             public void StoreItemList()  // 상점 아이템 목록 출력 함수
             {
+                Console.WriteLine("");
+                Console.WriteLine("");
                 Console.WriteLine("[판매중인 아이템 목록]");
+                Console.WriteLine("");
                 for (int i = 0; i < storeItems.Length; i++)
                 {
                     if (storeItems[i] != null)
@@ -415,13 +419,71 @@ namespace ConsoleRPG
                 }
             }
 
+            public void SellItem(int storeItemIndex, Inventory inventory)
+            {
+                string[] sellDialogues = {
+                    "훌륭한 장비지! 잘 쓰게나!",
+                    "그거 참 괜찮은 물건일세! 잘 선택 했구만!",
+                    "내가 만들었지만 참 걸작이란 말이지! 잘 써주게!"};
+                string[] cantSell = {
+                    "자네 골드가 부족하구만! 골드를 벌어서 다시 오게나!",
+                    "우리 가게는 외상이 안된다네, 젊은 친구!",
+                    "골드가 부족하군! 던전에 다녀오는게 어떻겠나!"};
+                string[] soldOutDialogues = {
+                    "그건 이미 팔린 상품일세!",
+                    "그건 다 나갔어! 다른 상품을 보게나!",
+                    "그 상품은 품절일세! 다음에 다시 찾아주겠나!" };
+
+                StoreItem storeItem = GetStoreItem(storeItemIndex);
+                if(storeItem != null)
+                {
+                    if(player.Gold >= storeItem.Price && storeItem.IsSoldOut == false)  // 판매 성공일 때
+                    {
+                        Item convertedItem = storeItem; // 부모 클래스로 형변환
+                        inventory.AddItem(convertedItem); // 판매 처리 및 인벤토리 추가 로직
+                        storeItem.IsSoldOut = true;
+                        player.Gold -= storeItem.Price;
+
+                        Console.SetCursorPosition(0,6);
+                        Console.ForegroundColor = ConsoleColor.Green;   //  대사 색깔 변경
+                        string sellDialogue = NpcDialogues(sellDialogues);   // 랜덤 대사
+                        Console.WriteLine(sellDialogue);  
+                        Console.ResetColor();  // 대사 색깔 리셋
+                        Console.SetCursorPosition(0, 0);
+                    }
+                    else if(player.Gold < storeItem.Price)  // 구매 불가
+                    {
+                        Console.SetCursorPosition(0, 6);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        string cantSellDialogue = NpcDialogues(cantSell);
+                        Console.WriteLine(cantSellDialogue);
+                        Console.ResetColor();
+                        Console.SetCursorPosition(0, 0);
+                    }
+                    else if(storeItem.IsSoldOut == true) // 품절일 때
+                    {
+                        Console.SetCursorPosition(0, 6);
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        string soldOutDialogue = NpcDialogues(soldOutDialogues);
+                        Console.WriteLine(soldOutDialogue);
+                        Console.ResetColor();
+                        Console.SetCursorPosition(0, 0);
+                    }
+                }
+            }
             public int GetStoreItemsLength()
             {
                 return storeItems.Length;
             }
         }
 
-        
+        static string NpcDialogues(string[] dialogues)  // 대사를 랜덤하게 출력하는 메서드
+        {
+            Random random = new Random();
+            int randomIndex = random.Next(dialogues.Length);
+
+            return dialogues[randomIndex];
+        }
 
         static void Choices()
         {
@@ -430,6 +492,12 @@ namespace ConsoleRPG
             Console.Write(">> ");
         }
 
+        static void Title()
+        {
+            string text = "☜§    Console RPG    §☞";
+            Console.SetCursorPosition((Console.WindowWidth - text.Length) / 2, Console.CursorTop);
+            Console.WriteLine(text);
+        }
 
         
     }
