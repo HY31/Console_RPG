@@ -501,7 +501,4 @@ namespace ConsoleRPG
 
         
     }
-
-    // 글자 색깔 바꾸는 코드
-   // Console.ForegroundColor = ConsoleColor.Red;
 }
