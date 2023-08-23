@@ -1,6 +1,8 @@
 ﻿using System;
 using static ConsoleRPG.Program;
 using static System.Reflection.Metadata.BlobBuilder;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace ConsoleRPG
 {
@@ -26,6 +28,7 @@ namespace ConsoleRPG
             //메서드만 갖다 놓기
             PlayerData();
             ViliageScene();
+            GameManager.LoadGame();
         }
         static int CheckInput(int min, int max) // 선택지 함수
         {
@@ -52,12 +55,14 @@ namespace ConsoleRPG
             Console.WriteLine("");
             Console.WriteLine("1. 상태창 보기");
             Console.WriteLine("2. 인벤토리 보기");
-            Console.WriteLine("3. 상점 가기");
+            Console.WriteLine("3. 상점으로");
             Console.WriteLine("4. 던전 입구로");
+            Console.WriteLine("5. 여관으로");
+            Console.WriteLine("");
             Console.WriteLine("0. 게임 종료");
             Choices();
 
-            int input = CheckInput(0, 4); // 선택지 함수. 선택지마다 쓸 것
+            int input = CheckInput(0, 5); // 선택지 함수. 선택지마다 쓸 것
             switch(input)
             {
                 case 1: Console.Clear(); 
@@ -72,11 +77,63 @@ namespace ConsoleRPG
                 case 4: Console.Clear();
                     ToDungeonEntrance();
                     break;
-                case 0: Console.WriteLine("게임을 종료합니다.");
+                case 5: Console.Clear();
+                    MotelScene();
+                    break;
+                case 0: Console.WriteLine("게임을 저장하고 종료합니다.");
+                    GameManager.SaveGame(player);
                     break;
             }
         }
 
+        static void MotelScene()
+        {
+            Title();
+            Console.WriteLine("[여관]");
+            Console.WriteLine("");
+            Console.WriteLine("여관 주인 : 여관에 오신 걸 환영합니다.");
+            Console.WriteLine("");
+            Console.WriteLine("1. 식사하기(체력 50 회복) | 100 G");
+            Console.WriteLine("2. 잠자기(체력 완전 회복) | 200 G");
+            Console.WriteLine("");
+            Console.WriteLine("0. 나가기");
+            Console.WriteLine("");
+            Console.WriteLine("무엇을 하시겠어요?");
+            Console.Write(">>");
+            int input = CheckInput(0, 2); // 선택지 함수. 선택지마다 쓸 것
+            switch (input)
+            {
+                case 1:Console.Clear();
+                    Console.SetCursorPosition(0, 10);
+                    Console.WriteLine("");
+                    if(player.HP < player.MaxHP)
+                    {
+                        Console.WriteLine("여관 주인 : 주문하신 음식 나왔습니다~ 맛있게 드세요~");
+                        Console.WriteLine("");
+                        Console.WriteLine("100골드를 지불합니다.");
+                        player.Gold -= 100;
+                        Console.WriteLine("");
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("맛있다! 체력이 50 회복됩니다.");
+                        Console.ResetColor();
+                        player.HP += 50;
+                    }
+                    else
+                    {
+                        Console.WriteLine("더 이상 식사할 필요는 없을 것 같다.");
+                    }
+                    Thread.Sleep(2000);
+                    Console.Clear();
+                    MotelScene();
+                    break;
+                case 2: Console.Clear();
+                    break;
+                case 0: Console.Clear();
+                    ViliageScene();
+                    break;
+
+            }
+        }
         static void DisplayInventory()  // 인벤토리 창
         {
             Title();
@@ -158,7 +215,7 @@ namespace ConsoleRPG
             Console.WriteLine($"직업 : {player.Job}");
             Console.WriteLine("");
             Console.WriteLine($"레벨 : {player.Level}");
-            Console.WriteLine($"체력 : {player.HP}");
+            Console.WriteLine($"체력 : {player.HP} / {player.MaxHP}");
             Console.WriteLine($"공격력 : {player.StatATK}");
             Console.WriteLine($"방어력 : {player.StatDEF}");
             Console.WriteLine($"전투력 : {player.Power}");
@@ -169,6 +226,7 @@ namespace ConsoleRPG
             Console.WriteLine("");
             Console.WriteLine("0. 돌아가기");
             Console.WriteLine("");
+            Console.Write(">>");
 
             Choices();
             int input = CheckInput(0, 0);
@@ -181,9 +239,10 @@ namespace ConsoleRPG
             }
         }
 
+        
         static void PlayerData()
         {
-            player = new Player("김전사", "전사", 10, 10, 15, 1000, 100, 0);
+            player = new Player("김전사", "전사", 10, 10, 15, 1000, 100, 100, 0);
         }
 
         public class Player // 플레이어 상태 틀
@@ -191,23 +250,43 @@ namespace ConsoleRPG
             public string Name { get; set; }
             public string Job { get; set; }
             public int Level { get; set; }
-            public int StatDEF { get; set; }
-            public int StatATK { get; set; }
+
+            private int statATK;
+            private int statDEF;
+            public int StatDEF { get { return statDEF; } set { statDEF = value; UpdatePower(); } }
+            public int StatATK { get { return statATK; } set { statATK = value; UpdatePower(); } }
             public int Gold { get; set; }
-            public int HP { get; set; }
-            public int Power { get; set; }
+
+            private int hp;
+            public int HP
+            {
+                get { return hp; }
+                set
+                {
+                    hp = Math.Min(value, MaxHP);
+                }
+            }
+
+            public int MaxHP { get; set; }
+
+            private int power;
+            public int Power { get { return power; } private set { power = value; } }
+            private void UpdatePower()
+            {
+                Power = StatATK + StatDEF;
+            }
             public int Exp { get; set; } // 추가: 경험치
             public int ExpNeeded { get; set; } // 추가: 다음 레벨까지 필요한 경험치
-            public Player(string name, string job, int level, int statDEF, int statATK, int gold, int hp, int exp)
+            public Player(string name, string job, int level, int statDEF, int statATK, int gold, int hp, int maxHp, int exp)
             {
                 Name = name;
                 Job = job;
                 Level = level;  
                 StatDEF = statDEF;
                 StatATK = statATK;
+                MaxHP = maxHp;
                 HP = hp;
                 Gold = gold;
-                Power = StatATK+StatDEF;
                 Exp = exp; // 추가: 경험치
                 ExpNeeded = CalculateExpNeeded();
             }
@@ -227,7 +306,10 @@ namespace ConsoleRPG
                 ExpNeeded = CalculateExpNeeded();
                 StatATK += 5;
                 StatDEF += 5;
+                Console.SetCursorPosition(10, 10);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"축하합니다! 레벨 업! 현재 레벨: {Level}");
+                Console.ResetColor();
             }
 
             private int CalculateExpNeeded() // 레벨 업에 필요한 경험치
@@ -344,8 +426,8 @@ namespace ConsoleRPG
             Console.WriteLine("");
             Console.WriteLine($"현재 보유 골드 : {player.Gold} G");
             Console.WriteLine("");
-            Console.WriteLine("어서 오시게! 쓸만한 물건이 많으니 천천히 둘러보게나!");
-            Console.WriteLine("판매중인 아이템들의 번호를 눌러 구매할 수 있다네!");
+            Console.WriteLine("브룬 : 어서 오시게! 쓸만한 물건이 많으니 천천히 둘러보게나!");
+            Console.WriteLine("브룬 : 판매중인 아이템들의 번호를 눌러 구매할 수 있다네!");
             Console.WriteLine("");
             store.StoreItemList();
             Console.WriteLine("");
@@ -594,6 +676,7 @@ namespace ConsoleRPG
             Console.WriteLine("4. 용의 둥지      |  필요 전투력 : 120");
             Console.WriteLine("");
             Console.WriteLine("0. 마을로 돌아가기");
+            Console.Write(">>");
 
             int input = CheckInput(0, 4);
 
@@ -629,12 +712,17 @@ namespace ConsoleRPG
 
                 if (randomNumber < 80 && selectedDungeon == firstDungeon) // 80퍼 확률
                 {
+                    Console.SetCursorPosition(0, 10);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.ResetColor();
                     Console.WriteLine("");
                     Console.WriteLine("[결과 정산]");
                     Console.WriteLine("");
                     Console.WriteLine("골드 + 500G", player.Gold += 500);
                     Console.WriteLine("체력 - 20", player.HP -= 20);
+                    Console.WriteLine("경험치 + 10");
+                    player.GetExp(10);
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("마을로 돌아갑니다.");
@@ -645,12 +733,17 @@ namespace ConsoleRPG
                 }
                 else if (randomNumber < 75 && selectedDungeon == secondDungeon) // 75퍼 확률
                 {
+                    Console.SetCursorPosition(0, 10);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.ResetColor();
                     Console.WriteLine("");
                     Console.WriteLine("[결과 정산]");
                     Console.WriteLine("");
                     Console.WriteLine("골드 + 1500G", player.Gold += 1500);
                     Console.WriteLine("체력 - 25", player.HP -= 25);
+                    Console.WriteLine("경험치 + 20");
+                    player.GetExp(20);
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("마을로 돌아갑니다.");
@@ -661,12 +754,17 @@ namespace ConsoleRPG
                 }
                 else if (randomNumber < 70 && selectedDungeon == thirdDungeon) // 70퍼 확률
                 {
+                    Console.SetCursorPosition(0, 10);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.ResetColor();
                     Console.WriteLine("");
                     Console.WriteLine("[결과 정산]");
                     Console.WriteLine("");
                     Console.WriteLine("골드 + 2000G", player.Gold += 2000);
                     Console.WriteLine("체력 - 30", player.HP -= 30);
+                    Console.WriteLine("경험치 + 40");
+                    player.GetExp(40);
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("마을로 돌아갑니다.");
@@ -677,12 +775,17 @@ namespace ConsoleRPG
                 }
                 else if (randomNumber < 60 && selectedDungeon == lastDungeon) // 60퍼 확률
                 {
+                    Console.SetCursorPosition(0, 10);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.ResetColor();
                     Console.WriteLine("");
                     Console.WriteLine("[결과 정산]");
                     Console.WriteLine("");
                     Console.WriteLine("골드 + 3000G", player.Gold += 3000);
                     Console.WriteLine("체력 - 40", player.HP -= 40);
+                    Console.WriteLine("경험치 + 80");
+                    player.GetExp(80);
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("마을로 돌아갑니다.");
@@ -693,10 +796,13 @@ namespace ConsoleRPG
                 }
                 else
                 {
+                    Console.SetCursorPosition(0, 10);
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("던전 클리어에 실패했습니다...");
+                    Console.ResetColor();
                     Console.WriteLine("");
                     Console.WriteLine("[결과 정산]");
-                    Console.WriteLine("체력 - 80");
+                    Console.WriteLine("체력 - 80", player.HP -= 80);
                     if(player.HP <=0)
                     {
                         Console.Clear();
@@ -709,7 +815,11 @@ namespace ConsoleRPG
                         Console.WriteLine("");
                     }
                     Console.WriteLine("");
-                    Console.WriteLine("마을로 돌아갑니다");
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine("마을로 돌아갑니다...");
+                    Console.ResetColor();
+                    Thread.Sleep(3000);
+                    Console.Clear();
                     ViliageScene();
 
                 }
@@ -755,8 +865,29 @@ namespace ConsoleRPG
                 Console.Clear();
             }
         }
-        
-        
+
+        public class GameManager
+        {
+            public static void SaveGame(Player player)
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Player));
+                using (TextWriter writer = new StreamWriter("savegame.xml"))
+                {
+                    serializer.Serialize(writer, player);
+                }
+                Console.WriteLine("게임이 성공적으로 저장되었습니다.");
+            }
+
+            public static Player LoadGame()
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Player));
+                using (TextReader reader = new StreamReader("savegame.xml"))
+                {
+                    return (Player)serializer.Deserialize(reader);
+                }
+            }
+        }
+
         static void Choices()
         {
             Console.WriteLine("");
