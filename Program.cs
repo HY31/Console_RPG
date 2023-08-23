@@ -10,7 +10,7 @@ namespace ConsoleRPG
         private static Inventory inventory;
         private static Item item;
         private static Store store;
-        private static StoreItem storeItem;
+        private static Dungeon dungeon;
         static void Main(string[] args)
         {
             Title();
@@ -26,7 +26,6 @@ namespace ConsoleRPG
             //메서드만 갖다 놓기
             PlayerData();
             ViliageScene();
-
         }
         static int CheckInput(int min, int max) // 선택지 함수
         {
@@ -46,7 +45,7 @@ namespace ConsoleRPG
         static void ViliageScene()  // 마을 씬
         {
             Title();
-            Console.WriteLine($"어서 오십시오! {player.Name}!");
+            Console.WriteLine($"어서 오십시오! {player.Name}님!");
             Console.WriteLine("현재 위치 : 마을");
             Console.WriteLine("");
             Console.WriteLine("마을에선 던전으로 들어가기 전에 장비를 확인할 수 있습니다.");
@@ -54,7 +53,7 @@ namespace ConsoleRPG
             Console.WriteLine("1. 상태창 보기");
             Console.WriteLine("2. 인벤토리 보기");
             Console.WriteLine("3. 상점 가기");
-            Console.WriteLine("4. 던전 입장");
+            Console.WriteLine("4. 던전 입구로");
             Console.WriteLine("0. 게임 종료");
             Choices();
 
@@ -71,26 +70,7 @@ namespace ConsoleRPG
                     StoreScene();
                     break;
                 case 4: Console.Clear();
-                    for(int i = 0; i<2; i++)    //던전 진행 애니메이션 실험했던 코드. 던전 자체는 메서드로 만들어야 될듯
-                    {
-                        Console.SetCursorPosition(10, 10);
-                        Console.WriteLine("던전 진행 중...");
-                        Thread.Sleep(500);
-                        Console.Clear();
-                        Console.SetCursorPosition(10, 10);
-                        Console.WriteLine("던전 진행 중..");
-                        Thread.Sleep(500);
-                        Console.Clear();
-                        Console.SetCursorPosition(10, 10);
-                        Console.WriteLine("던전 진행 중.");
-                        Thread.Sleep(500);
-                        Console.Clear();
-                        Console.SetCursorPosition(10, 10);
-                        Console.WriteLine("던전 진행 중");
-                        Thread.Sleep(500);
-                        Console.Clear();
-                    }
-                    ViliageScene();
+                    ToDungeonEntrance();
                     break;
                 case 0: Console.WriteLine("게임을 종료합니다.");
                     break;
@@ -181,7 +161,9 @@ namespace ConsoleRPG
             Console.WriteLine($"체력 : {player.HP}");
             Console.WriteLine($"공격력 : {player.StatATK}");
             Console.WriteLine($"방어력 : {player.StatDEF}");
+            Console.WriteLine($"전투력 : {player.Power}");
             Console.WriteLine("");
+            Console.WriteLine($"경험치 : {player.Exp} / {player.ExpNeeded}");
             Console.WriteLine("");
             Console.WriteLine($"보유 골드 : {player.Gold}G");
             Console.WriteLine("");
@@ -201,7 +183,7 @@ namespace ConsoleRPG
 
         static void PlayerData()
         {
-            player = new Player("김전사", "전사", 10, 10, 15, 1000, 100);
+            player = new Player("김전사", "전사", 10, 10, 15, 1000, 100, 0);
         }
 
         public class Player // 플레이어 상태 틀
@@ -213,8 +195,10 @@ namespace ConsoleRPG
             public int StatATK { get; set; }
             public int Gold { get; set; }
             public int HP { get; set; }
-
-            public Player(string name, string job, int level, int statDEF, int statATK, int gold, int hp)
+            public int Power { get; set; }
+            public int Exp { get; set; } // 추가: 경험치
+            public int ExpNeeded { get; set; } // 추가: 다음 레벨까지 필요한 경험치
+            public Player(string name, string job, int level, int statDEF, int statATK, int gold, int hp, int exp)
             {
                 Name = name;
                 Job = job;
@@ -223,6 +207,32 @@ namespace ConsoleRPG
                 StatATK = statATK;
                 HP = hp;
                 Gold = gold;
+                Power = StatATK+StatDEF;
+                Exp = exp; // 추가: 경험치
+                ExpNeeded = CalculateExpNeeded();
+            }
+            public void GetExp(int amount)  // 경험치 얻는 메서드
+            {
+                Exp += amount;
+                if (Exp >= ExpNeeded)
+                {
+                    LevelUp();
+                }
+            }
+
+            private void LevelUp()  // 레벨 업
+            {
+                Level++;
+                Exp -= ExpNeeded;
+                ExpNeeded = CalculateExpNeeded();
+                StatATK += 5;
+                StatDEF += 5;
+                Console.WriteLine($"축하합니다! 레벨 업! 현재 레벨: {Level}");
+            }
+
+            private int CalculateExpNeeded() // 레벨 업에 필요한 경험치
+            {
+                return Level * 2; 
             }
         }
 
@@ -243,7 +253,6 @@ namespace ConsoleRPG
                 UpATK = upATK;
                 UpDEF = upDEF;
                 IsEquipped = false;
-                
             }
         }
 
@@ -516,6 +525,238 @@ namespace ConsoleRPG
             return dialogues[randomIndex];
         }
 
+        static void ToDungeonEntrance()
+        {
+            Console.Clear();
+            Console.SetCursorPosition(2, 10);
+            Console.WriteLine("던전 입구로 향합니다.");
+            Thread.Sleep(1000);
+            DisplayDungeonEntrance();
+        }
+        static void DisplayDungeonEntrance()
+        {
+            Console.Clear();
+            Title();
+            Console.WriteLine("[던전 입구]");
+            Console.WriteLine("경비병 : 이 곳은 던전 입구입니다.");
+            Console.WriteLine("");
+            Console.WriteLine($"현재 내 전투력 : {player.Power}");
+            Console.WriteLine("");
+            DungeonSelect(player);
+        }
+
+        public class DungeonDifficulty
+        {
+            public string Name { get; set; }
+
+            public DungeonDifficulty(string name)
+            {
+                Name = name;
+            }
+        }
+
+        public class Dungeon
+        {
+            public string Name { get; set; }
+            public DungeonDifficulty Difficulty { get; set; }
+            public int RequiredPower { get; set; } // 필요한 전투력
+
+            public Dungeon(string name, DungeonDifficulty difficulty, int requiredPower)
+            {
+                Name = name;
+                Difficulty = difficulty;
+                RequiredPower = requiredPower;
+            }
+
+            public bool CanEnter(Player player)
+            {
+                return player.Power >= RequiredPower; // 플레이어 전투력이 필요 전투력보다 높으면 입장 가능
+            }
+        }
+
+        static void DungeonSelect(Player player)
+        {
+            DungeonDifficulty easy = new DungeonDifficulty("쉬움");
+            DungeonDifficulty normal = new DungeonDifficulty("보통");
+            DungeonDifficulty hard = new DungeonDifficulty("어려움");
+            DungeonDifficulty veryHard = new DungeonDifficulty("매우 어려움");
+
+            Dungeon firstDungeon = new Dungeon("고블린의 소굴", easy, 20);
+            Dungeon secondDungeon = new Dungeon("트롤 동굴", normal, 40);
+            Dungeon thirdDungeon = new Dungeon("골렘의 사원", hard, 60);
+            Dungeon lastDungeon = new Dungeon("용의 둥지", veryHard, 100);
+
+            Console.WriteLine("경비병 : 어떤 던전에 도전하시겠습니까?");
+            Console.WriteLine("어떤 던전에 입장하시겠습니까?");
+            Console.WriteLine("1. 고블린의 소굴  |  필요 전투력 : 20");
+            Console.WriteLine("2. 트롤 동굴      |  필요 전투력 : 60");
+            Console.WriteLine("3. 골렘의 사원    |  필요 전투력 : 80");
+            Console.WriteLine("4. 용의 둥지      |  필요 전투력 : 120");
+            Console.WriteLine("");
+            Console.WriteLine("0. 마을로 돌아가기");
+
+            int input = CheckInput(0, 4);
+
+            Dungeon selectedDungeon = null;
+
+            switch (input)
+            {
+                case 1:
+                    selectedDungeon = firstDungeon;
+                    break;
+                case 2:
+                    selectedDungeon = secondDungeon;
+                    break;
+                case 3:
+                    selectedDungeon = thirdDungeon;
+                    break;
+                case 4:
+                    selectedDungeon = lastDungeon;
+                    break;
+                case 0:Console.Clear();
+                    ViliageScene();
+                    break;
+            }
+
+            if (selectedDungeon != null && selectedDungeon.CanEnter(player) && player.HP > 50)
+            {
+                Random random = new Random();
+                int randomNumber = random.Next(100); // 0부터 99까지의 난수 생성
+                Console.Clear();
+                Console.WriteLine($"{selectedDungeon.Name}에 입장합니다!");
+                Console.Clear();
+                DungeonAnimation();
+
+                if (randomNumber < 80 && selectedDungeon == firstDungeon) // 80퍼 확률
+                {
+                    Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.WriteLine("");
+                    Console.WriteLine("[결과 정산]");
+                    Console.WriteLine("");
+                    Console.WriteLine("골드 + 500G", player.Gold += 500);
+                    Console.WriteLine("체력 - 20", player.HP -= 20);
+                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("마을로 돌아갑니다.");
+                    Console.ResetColor();
+                    Thread.Sleep(3000);
+                    Console.Clear();
+                    ViliageScene();
+                }
+                else if (randomNumber < 75 && selectedDungeon == secondDungeon) // 75퍼 확률
+                {
+                    Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.WriteLine("");
+                    Console.WriteLine("[결과 정산]");
+                    Console.WriteLine("");
+                    Console.WriteLine("골드 + 1500G", player.Gold += 1500);
+                    Console.WriteLine("체력 - 25", player.HP -= 25);
+                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("마을로 돌아갑니다.");
+                    Console.ResetColor();
+                    Thread.Sleep(3000);
+                    Console.Clear();
+                    ViliageScene();
+                }
+                else if (randomNumber < 70 && selectedDungeon == thirdDungeon) // 70퍼 확률
+                {
+                    Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.WriteLine("");
+                    Console.WriteLine("[결과 정산]");
+                    Console.WriteLine("");
+                    Console.WriteLine("골드 + 2000G", player.Gold += 2000);
+                    Console.WriteLine("체력 - 30", player.HP -= 30);
+                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("마을로 돌아갑니다.");
+                    Console.ResetColor();
+                    Thread.Sleep(3000);
+                    Console.Clear();
+                    ViliageScene();
+                }
+                else if (randomNumber < 60 && selectedDungeon == lastDungeon) // 60퍼 확률
+                {
+                    Console.WriteLine("축하합니다! 던전을 클리어 하셨습니다!");
+                    Console.WriteLine("");
+                    Console.WriteLine("[결과 정산]");
+                    Console.WriteLine("");
+                    Console.WriteLine("골드 + 3000G", player.Gold += 3000);
+                    Console.WriteLine("체력 - 40", player.HP -= 40);
+                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("마을로 돌아갑니다.");
+                    Console.ResetColor();
+                    Thread.Sleep(3000);
+                    Console.Clear();
+                    ViliageScene();
+                }
+                else
+                {
+                    Console.WriteLine("던전 클리어에 실패했습니다...");
+                    Console.WriteLine("");
+                    Console.WriteLine("[결과 정산]");
+                    Console.WriteLine("체력 - 80");
+                    if(player.HP <=0)
+                    {
+                        Console.Clear();
+                        Console.SetCursorPosition(10, 10);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("사망하였습니다.");
+                        Console.ResetColor();
+                        Console.WriteLine("");
+                        Console.WriteLine("");
+                        Console.WriteLine("");
+                    }
+                    Console.WriteLine("");
+                    Console.WriteLine("마을로 돌아갑니다");
+                    ViliageScene();
+
+                }
+            }
+            else if(selectedDungeon != null && selectedDungeon.CanEnter(player) && player.HP < 50)
+            {
+                Console.WriteLine("");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("경비병 : 모험가님? 체력을 회복하고 들어가시는게 어떨까요?");
+                Console.ResetColor();
+                Thread.Sleep(2000);
+                DisplayDungeonEntrance(); 
+            }
+            else if(selectedDungeon != null)
+            {
+                Console.WriteLine("");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("경비병 : 그 던전은 모험가 님에겐 너무 위험하군요.");
+                Console.ResetColor();
+                Thread.Sleep(2000);
+                DisplayDungeonEntrance();
+            }
+        }
+        static void DungeonAnimation()  //던전 진행 애니메이션
+        {
+            for (int i = 0; i < 2; i++)    
+            {
+                Console.SetCursorPosition(10, 10);
+                Console.WriteLine("던전 진행 중...");
+                Thread.Sleep(500);
+                Console.Clear();
+                Console.SetCursorPosition(10, 10);
+                Console.WriteLine("던전 진행 중..");
+                Thread.Sleep(500);
+                Console.Clear();
+                Console.SetCursorPosition(10, 10);
+                Console.WriteLine("던전 진행 중.");
+                Thread.Sleep(500);
+                Console.Clear();
+                Console.SetCursorPosition(10, 10);
+                Console.WriteLine("던전 진행 중");
+                Thread.Sleep(500);
+                Console.Clear();
+            }
+        }
+        
+        
         static void Choices()
         {
             Console.WriteLine("");
