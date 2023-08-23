@@ -858,6 +858,7 @@ namespace ConsoleRPG
                         Console.WriteLine("");
                         Console.WriteLine("");
                         Console.WriteLine("");
+                        return;
                     }
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
