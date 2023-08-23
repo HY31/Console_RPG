@@ -125,7 +125,29 @@ namespace ConsoleRPG
                     Console.Clear();
                     MotelScene();
                     break;
-                case 2: Console.Clear();
+                case 2:
+                    Console.Clear();
+                    Console.SetCursorPosition(0, 10);
+                    Console.WriteLine("");
+                    if (player.HP < player.MaxHP)
+                    {
+                        Console.WriteLine("여관 주인 : 편안한 밤 되세요~");
+                        Console.WriteLine("");
+                        Console.WriteLine("200골드를 지불합니다.");
+                        player.Gold -= 200;
+                        Console.WriteLine("");
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("푹 쉬었다. 체력이 전부 회복됐다.");
+                        Console.ResetColor();
+                        player.HP = player.MaxHP;
+                    }
+                    else
+                    {
+                        Console.WriteLine("지금은 피곤하지 않다.");
+                    }
+                    Thread.Sleep(2000);
+                    Console.Clear();
+                    MotelScene();
                     break;
                 case 0: Console.Clear();
                     ViliageScene();
