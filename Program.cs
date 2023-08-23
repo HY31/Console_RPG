@@ -690,10 +690,9 @@ namespace ConsoleRPG
             public DungeonDifficulty Difficulty { get; set; }
             public int RequiredPower { get; set; } // 필요한 전투력
 
-            public Dungeon(string name, DungeonDifficulty difficulty, int requiredPower)
+            public Dungeon(string name, int requiredPower)
             {
                 Name = name;
-                Difficulty = difficulty;
                 RequiredPower = requiredPower;
             }
 
@@ -705,15 +704,10 @@ namespace ConsoleRPG
 
         static void DungeonSelect(Player player)
         {
-            DungeonDifficulty easy = new DungeonDifficulty("쉬움");
-            DungeonDifficulty normal = new DungeonDifficulty("보통");
-            DungeonDifficulty hard = new DungeonDifficulty("어려움");
-            DungeonDifficulty veryHard = new DungeonDifficulty("매우 어려움");
-
-            Dungeon firstDungeon = new Dungeon("고블린의 소굴", easy, 20);
-            Dungeon secondDungeon = new Dungeon("트롤 동굴", normal, 40);
-            Dungeon thirdDungeon = new Dungeon("골렘의 사원", hard, 60);
-            Dungeon lastDungeon = new Dungeon("용의 둥지", veryHard, 100);
+            Dungeon firstDungeon = new Dungeon("고블린의 소굴", 20);
+            Dungeon secondDungeon = new Dungeon("트롤 동굴",  40);
+            Dungeon thirdDungeon = new Dungeon("골렘의 사원", 60);
+            Dungeon lastDungeon = new Dungeon("용의 둥지",  100);
 
             Console.WriteLine("경비병 : 어떤 던전에 도전하시겠습니까?");
             Console.WriteLine("");
@@ -753,7 +747,11 @@ namespace ConsoleRPG
                 Random random = new Random();
                 int randomNumber = random.Next(100); // 0부터 99까지의 난수 생성
                 Console.Clear();
+                Console.SetCursorPosition(10, 10);
+                Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"{selectedDungeon.Name}에 입장합니다!");
+                Console.ResetColor();
+                Thread.Sleep(1200);
                 Console.Clear();
                 DungeonAnimation();
 
