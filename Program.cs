@@ -545,6 +545,7 @@ namespace ConsoleRPG
             public void StoreItemList()  // 상점 아이템 목록 출력 함수
             {
                 Console.WriteLine("");
+                Console.WriteLine("");
                 Console.WriteLine("[판매중인 아이템 목록]");
                 Console.WriteLine("");
                 for (int i = 0; i < storeItems.Length; i++)
