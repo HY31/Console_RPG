@@ -871,18 +871,28 @@ namespace ConsoleRPG
             }
             else if(selectedDungeon != null && selectedDungeon.CanEnter(player) && player.HP < 50)
             {
+                string[] ShortOfHp = {
+                    "경비병 : 모험가님? 체력을 회복하고 들어가시는게 어떨까요?",
+                    "경비병 : 회복 먼저 하시는걸 추천드리겠습니다.",
+                    "경비병 : 피곤해보이시는데 회복하고 오시는게 좋겠군요."};
                 Console.WriteLine("");
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("경비병 : 모험가님? 체력을 회복하고 들어가시는게 어떨까요?");
+                string shortOfHp = NpcDialogues(ShortOfHp);
+                Console.WriteLine(shortOfHp);
                 Console.ResetColor();
                 Thread.Sleep(2000);
                 DisplayDungeonEntrance(); 
             }
             else if(selectedDungeon != null)
             {
+                string[] CantIn = {
+                    "경비병 : 그 던전은 모험가님께는 무리입니다.",
+                    "경비병 : 그 곳으로 가시기엔 약하시군요.",
+                    "경비병 : 그 곳은 좀 더 강해진 후에 가시겠습니까? 지금은 무리입니다."};
                 Console.WriteLine("");
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("경비병 : 그 던전은 모험가 님에겐 너무 위험하군요.");
+                string cantIn = NpcDialogues(CantIn);
+                Console.WriteLine(cantIn);
                 Console.ResetColor();
                 Thread.Sleep(2000);
                 DisplayDungeonEntrance();
