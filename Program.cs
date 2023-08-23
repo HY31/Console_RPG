@@ -340,15 +340,17 @@ namespace ConsoleRPG
                 ExpNeeded = CalculateExpNeeded();
                 StatATK += 5;
                 StatDEF += 5;
-                Console.SetCursorPosition(10, 10);
+                MaxHP += 50;
+                HP = MaxHP;
+                Console.SetCursorPosition(5, 5);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"축하합니다! 레벨 업! 현재 레벨: {Level}");
+                Console.WriteLine($"레벨 업! 현재 레벨: {Level}");
                 Console.ResetColor();
             }
 
             private int CalculateExpNeeded() // 레벨 업에 필요한 경험치
             {
-                return Level * 2; 
+                return Level * 5; 
             }
         }
 
