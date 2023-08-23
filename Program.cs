@@ -1,8 +1,7 @@
 ﻿using System;
 using static ConsoleRPG.Program;
 using static System.Reflection.Metadata.BlobBuilder;
-using System.IO;
-using System.Xml.Serialization;
+
 
 namespace ConsoleRPG
 {
@@ -17,7 +16,8 @@ namespace ConsoleRPG
         {
             Title();
             
-            Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다.");
+            Console.WriteLine("콘솔 RPG의 세계에 오신 것을 환영합니다!");
+            Console.WriteLine("");
             Console.WriteLine("Enter키를 눌러 게임에 접속할 수 있습니다.");
             Console.ReadLine();
             Console.Clear();
@@ -28,7 +28,6 @@ namespace ConsoleRPG
             //메서드만 갖다 놓기
             PlayerData();
             ViliageScene();
-            GameManager.LoadGame();
         }
         static int CheckInput(int min, int max) // 선택지 함수
         {
@@ -49,7 +48,8 @@ namespace ConsoleRPG
         {
             Title();
             Console.WriteLine($"어서 오십시오! {player.Name}님!");
-            Console.WriteLine("현재 위치 : 마을");
+            Console.WriteLine("");
+            Console.WriteLine("[마을]");
             Console.WriteLine("");
             Console.WriteLine("마을에선 던전으로 들어가기 전에 장비를 확인할 수 있습니다.");
             Console.WriteLine("");
@@ -80,8 +80,7 @@ namespace ConsoleRPG
                 case 5: Console.Clear();
                     MotelScene();
                     break;
-                case 0: Console.WriteLine("게임을 저장하고 종료합니다.");
-                    GameManager.SaveGame(player);
+                case 0: Console.WriteLine("게임을 종료합니다.");
                     break;
             }
         }
@@ -140,6 +139,7 @@ namespace ConsoleRPG
             ItemsInInventory(inventory); // 아이템 목록 값 할당
 
             Console.WriteLine($"[{player.Name}의 인벤토리]");
+            Console.WriteLine("");
             Console.WriteLine("보유중인 아이템들을 관리할 수 있습니다.");
             Console.WriteLine("");
             inventory.ItemList();  // 아이템 목록 호출
@@ -168,6 +168,7 @@ namespace ConsoleRPG
             ItemsInInventory(inventory); // 아이템 목록 값 할당
 
             Console.WriteLine("[장비 관리창]");
+            Console.WriteLine("");
             Console.WriteLine("장비를 관리할 수 있습니다.");
             Console.WriteLine("");
             inventory.ItemList(); // 아이템 목록 호출
@@ -208,6 +209,7 @@ namespace ConsoleRPG
         {
             Title();
             Console.WriteLine("[상태창]");
+            Console.WriteLine("");
             Console.WriteLine("플레이어의 정보를 확인합니다.");
             Console.WriteLine("");
             Console.WriteLine($"이름 : {player.Name}");
@@ -248,16 +250,23 @@ namespace ConsoleRPG
         public class Player // 플레이어 상태 틀
         {
             public string Name { get; set; }
+            
             public string Job { get; set; }
+            
             public int Level { get; set; }
-
+            
             private int statATK;
+            
             private int statDEF;
+            
             public int StatDEF { get { return statDEF; } set { statDEF = value; UpdatePower(); } }
+            
             public int StatATK { get { return statATK; } set { statATK = value; UpdatePower(); } }
+            
             public int Gold { get; set; }
-
+            
             private int hp;
+            
             public int HP
             {
                 get { return hp; }
@@ -266,16 +275,19 @@ namespace ConsoleRPG
                     hp = Math.Min(value, MaxHP);
                 }
             }
-
+            
             public int MaxHP { get; set; }
-
+            
             private int power;
+            
             public int Power { get { return power; } private set { power = value; } }
             private void UpdatePower()
             {
                 Power = StatATK + StatDEF;
             }
+            
             public int Exp { get; set; } // 추가: 경험치
+            
             public int ExpNeeded { get; set; } // 추가: 다음 레벨까지 필요한 경험치
             public Player(string name, string job, int level, int statDEF, int statATK, int gold, int hp, int maxHp, int exp)
             {
@@ -321,11 +333,17 @@ namespace ConsoleRPG
         //인벤토리 관련 모든 것
         public class Item
         {
+            
             public string Name { get; }
+            
             public string StatTxt { get; set; }
+            
             public string Description { get; }
+            
             public bool IsEquipped { get; set; }
+            
             public int UpATK { get; set; }
+            
             public int UpDEF { get; set; }
             public Item(string name, string statTxt,  string description,  int upATK, int upDEF)
             {
@@ -340,6 +358,7 @@ namespace ConsoleRPG
 
         public class Inventory
         {
+            
             private Item[] items;  // 외부에서 맘대로 못건드리게 private으로 해놓음
             
             public Inventory(int size)
@@ -450,8 +469,11 @@ namespace ConsoleRPG
 
         public class StoreItem : Item  // 판매하려면 Item에 들어가야되므로 상속
         {
+            
             public bool IsSoldOut { get; set; }
+            
             public int Price { get; set; }
+            
             public string PriceTxt { get; set; }
             public StoreItem(string name,string statTxt, string description, int upATK, int upDEF, int price, string priceTxt)
                 : base(name, statTxt, description, upATK, upDEF)
@@ -522,7 +544,6 @@ namespace ConsoleRPG
             }
             public void StoreItemList()  // 상점 아이템 목록 출력 함수
             {
-                Console.WriteLine("");
                 Console.WriteLine("");
                 Console.WriteLine("[판매중인 아이템 목록]");
                 Console.WriteLine("");
@@ -620,7 +641,8 @@ namespace ConsoleRPG
             Console.Clear();
             Title();
             Console.WriteLine("[던전 입구]");
-            Console.WriteLine("경비병 : 이 곳은 던전 입구입니다.");
+            Console.WriteLine("");
+            Console.WriteLine("경비병 : 이 곳은 던전 입구입니다. 던전 내부는 위험하니 충분히 준비한 다음 입장하시기 바랍니다.");
             Console.WriteLine("");
             Console.WriteLine($"현재 내 전투력 : {player.Power}");
             Console.WriteLine("");
@@ -669,7 +691,7 @@ namespace ConsoleRPG
             Dungeon lastDungeon = new Dungeon("용의 둥지", veryHard, 100);
 
             Console.WriteLine("경비병 : 어떤 던전에 도전하시겠습니까?");
-            Console.WriteLine("어떤 던전에 입장하시겠습니까?");
+            Console.WriteLine("");
             Console.WriteLine("1. 고블린의 소굴  |  필요 전투력 : 20");
             Console.WriteLine("2. 트롤 동굴      |  필요 전투력 : 60");
             Console.WriteLine("3. 골렘의 사원    |  필요 전투력 : 80");
@@ -863,28 +885,6 @@ namespace ConsoleRPG
                 Console.WriteLine("던전 진행 중");
                 Thread.Sleep(500);
                 Console.Clear();
-            }
-        }
-
-        public class GameManager
-        {
-            public static void SaveGame(Player player)
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(Player));
-                using (TextWriter writer = new StreamWriter("savegame.xml"))
-                {
-                    serializer.Serialize(writer, player);
-                }
-                Console.WriteLine("게임이 성공적으로 저장되었습니다.");
-            }
-
-            public static Player LoadGame()
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(Player));
-                using (TextReader reader = new StreamReader("savegame.xml"))
-                {
-                    return (Player)serializer.Deserialize(reader);
-                }
             }
         }
 
